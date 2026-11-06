@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusBookX | Marketplace de Libros Universitarios MXN</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Configuración Tailwind personalizada -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Estilos Personalizados Integrados -->
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #020617;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #10b981;
+        }
+        .book-card {
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .book-card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-emerald-500 selection:text-slate-950">
+
+    <!-- Toast Notificación Flotante -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 bg-emerald-500 text-slate-950 font-bold px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 translate-x-96 opacity-0 border border-emerald-400 text-xs">
+        <i class="fa-solid fa-circle-check text-base"></i>
+        <span id="toast-message">Mensaje del sistema</span>
+    </div>
+
+    <!-- NAVEGACIÓN PRINCIPAL (HEADER) -->
+    <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 px-4 lg:px-8 py-3.5">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <!-- Logo -->
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="bg-emerald-500 p-2.5 rounded-2xl text-slate-950 group-hover:scale-105 transition shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-book-open text-lg"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-black text-white tracking-tight flex items-center gap-1.5">
+                        CampusBookX <span class="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">Campus MX</span>
+                    </span>
+                    <p class="text-[11px] text-slate-400 hidden sm:block">Plataforma de Libros entre Estudiantes</p>
+                </div>
+            </a>
+
+            <!-- Enlaces de Navegación -->
+            <nav class="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-300">
+                <a href="#catalogo" class="hover:text-emerald-400 transition">Catálogo</a>
+                <a href="#como-funciona" class="hover:text-emerald-400 transition">¿Cómo Funciona?</a>
+            </nav>
+
+            <!-- Controles Estudiante y Publicación -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button id="btn-open-student-modal" class="bg-slate-900 border border-slate-800 hover:border-emerald-500/50 text-slate-200 px-3 py-2 rounded-xl text-xs flex items-center gap-2 transition">
+                    <div class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-[10px]" id="nav-user-avatar">
+                        C
+                    </div>
+                    <div class="text-left hidden sm:block">
+                        <span id="nav-user-name" class="font-bold text-white block text-[11px] leading-tight">Carlos Mendoza</span>
+                        <span id="nav-user-major" class="text-[9px] text-slate-400 block leading-tight">Medicina</span>
+                    </div>
+                    <i class="fa-solid fa-pen text-[10px] text-slate-500 ml-1"></i>
+                </button>
+
+                <button id="btn-open-publish-modal" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-3.5 py-2.5 rounded-xl transition shadow-lg shadow-emerald-500/10 flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Publicar Libro</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="relative bg-slate-900/50 border-b border-slate-800/80 py-12 lg:py-16 px-4 lg:px-8 overflow-hidden">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div class="lg:col-span-7 space-y-5">
+                <div class="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1 rounded-full text-xs font-semibold">
+                    <i class="fa-solid fa-graduation-cap"></i> Exclusivo para Comunidad Universitaria
+                </div>
+                <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+                    Compra, Alquila e Intercambia tus Libros <span class="text-emerald-400">Sin Intermediarios</span>
+                </h1>
+                <p class="text-sm sm:text-base text-slate-300 max-w-2xl leading-relaxed">
+                    Ahorra en tus libros de Medicina, Ingeniería y Ciencias. Coordinas la entrega con tus compañeros dentro del campus y pagas <strong class="text-white font-bold">100% en persona</strong>.
+                </p>
+                <div class="flex flex-wrap items-center gap-4 pt-2">
+                    <a href="#catalogo" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-3 rounded-xl text-xs transition shadow-lg shadow-emerald-500/20">
+                        Explorar Catálogo <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </a>
+                    <a href="#como-funciona" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-6 py-3 rounded-xl text-xs font-semibold transition">
+                        ¿Cómo funciona?
+                    </a>
+                </div>
+            </div>
+
+            <div class="lg:col-span-5 grid grid-cols-2 gap-3">
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-2">
+                    <i class="fa-solid fa-hand-holding-dollar text-emerald-400 text-xl"></i>
+                    <h2 class="text-white font-bold text-sm">Pago en Persona</h2>
+                    <p class="text-xs text-slate-400">Efectivo o transferencia directo al encontrarse en campus.</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-2">
+                    <i class="fa-solid fa-stethoscope text-emerald-400 text-xl"></i>
+                    <h2 class="text-white font-bold text-sm">Medicina & Ciencias</h2>
+                    <p class="text-xs text-slate-400">Anatomía, Fisiología, Cálculo y Programación.</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-2">
+                    <i class="fa-solid fa-calendar-check text-emerald-400 text-xl"></i>
+                    <h2 class="text-white font-bold text-sm">Alquiler Semestral</h2>
+                    <p class="text-xs text-slate-400">Opción económica por la duración del curso.</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-2">
+                    <i class="fa-solid fa-building-columns text-emerald-400 text-xl"></i>
+                    <h2 class="text-white font-bold text-sm">Puntos Seguros</h2>
+                    <p class="text-xs text-slate-400">Biblioteca Central, Cafetería o facultades.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CATÁLOGO CON FILTROS -->
+    <section id="catalogo" class="max-w-7xl mx-auto px-4 lg:px-8 py-10 space-y-8 flex-1 w-full">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-5 shadow-xl">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-emerald-400"></i> Búsqueda y Filtros de Libros
+                    </h2>
+                    <p class="text-xs text-slate-400">Filtra rápidamente por materia, edición y tu presupuesto en Pesos Mexicanos.</p>
+                </div>
+                <button id="btn-reset-filters" class="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 font-semibold">
+                    <i class="fa-solid fa-rotate"></i> Restablecer Filtros
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                <!-- Buscador General -->
+                <div class="space-y-1 sm:col-span-2 lg:col-span-1">
+                    <label class="font-bold text-slate-300 block">Buscador General</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-500"></i>
+                        <input type="text" id="search-input" placeholder="Título, autor (ej. Moore, Stewart)..." class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl pl-9 pr-3 py-2.5 text-white outline-none">
+                    </div>
+                </div>
+
+                <!-- Filtro por Materia -->
+                <div class="space-y-1">
+                    <label class="font-bold text-slate-300 block">Materia / Facultad</label>
+                    <select id="filter-subject" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-2.5 text-white outline-none">
+                        <option value="ALL">Todas las materias</option>
+                        <option value="ANAT-101 (Anatomía Humana)">ANAT-101 (Anatomía Humana)</option>
+                        <option value="FISIO-201 (Fisiología)">FISIO-201 (Fisiología)</option>
+                        <option value="FARMA-301 (Farmacología)">FARMA-301 (Farmacología)</option>
+                        <option value="MAT-101 (Cálculo)">MAT-101 (Cálculo)</option>
+                        <option value="CS-101 (Programación)">CS-101 (Programación)</option>
+                        <option value="FIS-202 (Física)">FIS-202 (Física)</option>
+                    </select>
+                </div>
+
+                <!-- Filtro por Edición -->
+                <div class="space-y-1">
+                    <label class="font-bold text-slate-300 block">Edición</label>
+                    <select id="filter-edition" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-2.5 text-white outline-none">
+                        <option value="ALL">Cualquier edición</option>
+                        <option value="9ª Edición">9ª Edición</option>
+                        <option value="8ª Edición">8ª Edición</option>
+                        <option value="7ª Edición">7ª Edición</option>
+                        <option value="5ª Edición">5ª Edición</option>
+                        <option value="4ª Edición">4ª Edición</option>
+                    </select>
+                </div>
+
+                <!-- Rango de Precio MXN ($180 - $800) -->
+                <div class="space-y-1">
+                    <div class="flex justify-between items-center">
+                        <label class="font-bold text-slate-300">Precio Máximo</label>
+                        <span id="price-display" class="font-bold text-emerald-400 font-mono">$800 MXN</span>
+                    </div>
+                    <input type="range" id="filter-price-range" min="180" max="800" step="20" value="800" class="w-full accent-emerald-500 bg-slate-950 h-2 rounded-lg cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+                        <span>$180 MXN</span>
+                        <span>$800 MXN</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTADOR Y GRID DE LIBROS -->
+        <div class="space-y-4">
+            <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+                <span>Mostrando <strong id="books-count" class="text-emerald-400 font-bold">0</strong> libros disponibles</span>
+                <span class="text-[11px]"><i class="fa-solid fa-shield-halved text-emerald-400 mr-1"></i> Tratos directos en campus</span>
+            </div>
+
+            <div id="books-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN CÓMO FUNCIONA -->
+    <section id="como-funciona" class="bg-slate-900/60 border-y border-slate-800/80 py-12 px-4 lg:px-8">
+        <div class="max-w-7xl mx-auto space-y-8">
+            <div class="text-center space-y-2 max-w-2xl mx-auto">
+                <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Sin complicaciones</span>
+                <h2 class="text-2xl font-black text-white">¿Cómo Funciona CampusBookX?</h2>
+                <p class="text-xs text-slate-400">Diseñado para simplificar el intercambio de libros de texto eliminando revendedores.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-base border border-emerald-500/20">1</div>
+                    <h3 class="font-bold text-white text-base">Encuentra tu Libro</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">Filtra por materia, edición requerida y compara compra vs. alquiler.</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-base border border-emerald-500/20">2</div>
+                    <h3 class="font-bold text-white text-base">Acuerda el Punto</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">Elige un lugar seguro en la universidad (Biblioteca, Cafetería o Plaza).</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-base border border-emerald-500/20">3</div>
+                    <h3 class="font-bold text-white text-base">Paga al Recibir</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">Revisas el estado del libro en persona y pagas ahí mismo en efectivo o transferencia.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 border-t border-slate-800/80 py-8 px-4 lg:px-8 text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <div class="bg-emerald-500 p-1.5 rounded-lg text-slate-950">
+                    <i class="fa-solid fa-book-open"></i>
+                </div>
+                <span class="font-bold text-slate-300">CampusBookX MX</span>
+            </div>
+            <p>© 2026 Plataforma Estudiantil de Libros de Texto. Tratos directos en campus.</p>
+        </div>
+    </footer>
+
+    <!-- MODAL 1: REGISTRO / PERFIL DE ESTUDIANTE -->
+    <div id="student-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 relative shadow-2xl">
+            <button id="btn-close-student-modal" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-base"></i>
+            </button>
+            <div>
+                <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">Identificación Estudiantil</span>
+                <h3 class="text-base font-bold text-white">Mi Perfil de Estudiante</h3>
+                <p class="text-xs text-slate-400">Tus datos se muestran cuando publicas o reservas libros.</p>
+            </div>
+            <form id="student-form" class="space-y-3 text-xs">
+                <div>
+                    <label class="font-bold text-slate-300 block mb-1">Nombre Completo *</label>
+                    <input type="text" id="student-name" required placeholder="Ej. Carlos Mendoza" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-2.5 text-white outline-none">
+                </div>
+                <div>
+                    <label class="font-bold text-slate-300 block mb-1">Carrera / Facultad *</label>
+                    <input type="text" id="student-major" required placeholder="Ej. Medicina (4° Semestre)" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-2.5 text-white outline-none">
+                </div>
+                <div>
+                    <label class="font-bold text-slate-300 block mb-1">WhatsApp / Celular *</label>
+                    <input type="text" id="student-phone" required placeholder="Ej. +52 55 1234 5678" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-2.5 text-white outline-none font-mono">
+                </div>
+                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 rounded-xl transition">
+                    Guardar Cambios
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: RESERVA Y CITA EN CAMPUS -->
+    <div id="meetup-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 relative shadow-2xl">
+            <button id="btn-close-meetup-modal" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-base"></i>
+            </button>
+            <div>
+                <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">Acordar Encuentro en Campus</span>
+                <h3 id="modal-book-title" class="text-base font-bold text-white">Título del libro</h3>
+                <p id="modal-book-seller" class="text-xs text-slate-400">Vendedor: Estudiante</p>
+            </div>
+
+            <!-- Elección Compra o Alquiler -->
+            <div class="space-y-1.5 text-xs">
+                <label class="font-bold text-slate-300 block">Opción de adquisición:</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" id="btn-opt-rent" class="p-2.5 rounded-xl border font-bold text-center transition bg-emerald-500/20 border-emerald-500 text-emerald-400">
+                        Alquilar Semestre
+                    </button>
+                    <button type="button" id="btn-opt-buy" class="p-2.5 rounded-xl border font-bold text-center transition bg-slate-950 border-slate-800 text-slate-400">
+                        Comprar Libro
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="font-bold text-slate-300 block mb-1">Punto de Encuentro Seguro *</label>
+                    <select id="meetup-location" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-2.5 text-white outline-none">
+                        <option value="Biblioteca Central (Entrada Principal)">Biblioteca Central (Entrada Principal)</option>
+                        <option value="Cafetería Central / Plaza de Alumnos">Cafetería Central / Plaza de Alumnos</option>
+                        <option value="Facultad de Medicina (Lobby Principal)">Facultad de Medicina (Lobby Principal)</option>
+                        <option value="Facultad de Ingeniería (Edificio A)">Facultad de Ingeniería (Edificio A)</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="font-bold text-slate-300 block mb-1">Fecha *</label>
+                        <input type="date" id="meetup-date" value="2026-11-10" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-2.5 text-white outline-none">
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-300 block mb-1">Hora *</label>
+                        <input type="time" id="meetup-time" value="12:00" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-2.5 text-white outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-400">
+                <i class="fa-solid fa-handshake-angle text-emerald-400 mr-1"></i>
+                El pago de <strong id="modal-price-tag" class="text-white font-mono">$0 MXN</strong> se realiza directamente en persona al revisar el libro.
+            </div>
+
+            <button id="btn-confirm-meetup" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl text-xs transition">
+                Confirmar Cita e Intercambio
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 3: PUBLICAR NUEVO LIBRO -->
+    <div id="publish-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 relative shadow-2xl">
+            <button id="btn-close-publish-modal" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-base"></i>
+            </button>
+            <div>
+                <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">Publicación Estudiantil</span>
+                <h3 class="text-base font-bold text-white">Publicar Libro en CampusBookX</h3>
+                <p class="text-xs text-slate-400">Se publicará con tus datos de contacto registrados.</p>
+            </div>
+
+            <form id="publish-form" class="space-y-3 text-xs">
+                <div>
+                    <label class="font-bold text-slate-300 block mb-1">Título del Libro *</label>
+                    <input type="text" id="pub-title" required placeholder="Ej. Anatomía con Orientación Clínica" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-2.5 text-white outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="font-bold text-slate-300 block mb-1">Autor *</label>
+                        <input type="text" id="pub-author" required placeholder="Ej. Keith L. Moore" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-2.5 text-white outline-none">
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-300 block mb-1">Materia *</label>
+                        <select id="pub-subject" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-2.5 text-white outline-none">
+                            <option value="ANAT-101 (Anatomía Humana)">ANAT-101 (Anatomía Humana)</option>
+                            <option value="FISIO-201 (Fisiología)">FISIO-201 (Fisiología)</option>
+                            <option value="FARMA-301 (Farmacología)">FARMA-301 (Farmacología)</option>
+                            <option value="MAT-101 (Cálculo)">MAT-101 (Cálculo)</option>
+                            <option value="CS-101 (Programación)">CS-101 (Programación)</option>
+                            <option value="FIS-202 (Física)">FIS-202 (Física)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="font-bold text-slate-300 block mb-1">Edición *</label>
+                        <select id="pub-edition" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-2.5 text-white outline-none">
+                            <option value="8ª Edición">8ª Edición</option>
+                            <option value="9ª Edición">9ª Edición</option>
+                            <option value="7ª Edición">7ª Edición</option>
+                            <option value="5ª Edición">5ª Edición</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-300 block mb-1">Venta ($MXN) *</label>
+                        <input type="number" id="pub-buy-price" min="180" max="800" required placeholder="780" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-2.5 text-white outline-none font-mono">
+                    </div>
+                    <div>
+                        <label class="font-bold text-emerald-400 block mb-1">Alquiler ($MXN) *</label>
+                        <input type="number" id="pub-rent-price" min="180" max="800" required placeholder="380" class="w-full bg-slate-950 border border-emerald-500/40 focus:border-emerald-500 rounded-xl p-2.5 text-emerald-400 outline-none font-mono">
+                    </div>
+                </div>
+                <div>
+                    <label class="font-bold text-slate-300 block mb-1">Notas / Estado del Libro</label>
+                    <textarea id="pub-notes" rows="2" placeholder="Ej. Excelente estado, apuntes limpios en lápiz." class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-2.5 text-white outline-none"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition">
+                    Publicar en el Catálogo
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- LÓGICA JAVASCRIPT INTEGRADA -->
+    <script>
+        let currentStudent = {
+            name: 'Carlos Mendoza',
+            major: 'Medicina (4° Semestre)',
+            phone: '+52 55 9876 5432'
+        };
+
+        let BOOKS = [
+            {
+                id: 'b-1',
+                title: 'Anatomía con Orientación Clínica',
+                author: 'Keith L. Moore',
+                subject: 'ANAT-101 (Anatomía Humana)',
+                edition: '8ª Edición',
+                buyPrice: 780,
+                rentPrice: 380,
+                condition: 'Excelente',
+                notes: 'Libro de lab de anatomía. Esquemas limpios sin rayaduras.',
+                coverImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600',
+                seller: { name: 'Dra. Andrea Ruiz', major: 'Medicina (Internado)', phone: '+52 55 1122 3344' }
+            },
+            {
+                id: 'b-2',
+                title: 'Tratado de Fisiología Médica',
+                author: 'Guyton y Hall',
+                subject: 'FISIO-201 (Fisiología)',
+                edition: '9ª Edición',
+                buyPrice: 750,
+                rentPrice: 360,
+                condition: 'Como Nuevo',
+                notes: 'Empastado en perfecto estado. Sin marca-textos.',
+                coverImage: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&q=80&w=600',
+                seller: { name: 'Mateo Morales', major: 'Medicina (6° Semestre)', phone: '+52 55 9988 7766' }
+            },
+            {
+                id: 'b-3',
+                title: 'Farmacología Ilustrada',
+                author: 'Karen Whalen (Lippincott)',
+                subject: 'FARMA-301 (Farmacología)',
+                edition: '7ª Edición',
+                buyPrice: 580,
+                rentPrice: 270,
+                condition: 'Bueno',
+                notes: 'Diagramas de mecanismos de acción con notas a lápiz.',
+                coverImage: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=600',
+                seller: { name: 'Valeria Gómez', major: 'QFB (5° Semestre)', phone: '+52 55 4455 6677' }
+            },
+            {
+                id: 'b-4',
+                title: 'Cálculo de Una Variable',
+                author: 'James Stewart',
+                subject: 'MAT-101 (Cálculo)',
+                edition: '8ª Edición',
+                buyPrice: 450,
+                rentPrice: 220,
+                condition: 'Excelente',
+                notes: 'Usado en primer semestre. Ejercicios resueltos anexados.',
+                coverImage: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&q=80&w=600',
+                seller: { name: 'Sofía Martínez', major: 'Ingeniería Civil', phone: '+52 55 1234 5678' }
+            },
+            {
+                id: 'b-5',
+                title: 'Fundamentos de Programación en Java',
+                author: 'Robert Lafore',
+                subject: 'CS-101 (Programación)',
+                edition: '5ª Edición',
+                buyPrice: 380,
+                rentPrice: 190,
+                condition: 'Bueno',
+                notes: 'Ideal para programación orientada a objetos.',
+                coverImage: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&q=80&w=600',
+                seller: { name: 'Carlos Mendoza', major: 'Computación', phone: '+52 55 9876 5432' }
+            },
+            {
+                id: 'b-6',
+                title: 'Física Universitaria Vol 1',
+                author: 'Sears y Zemansky',
+                subject: 'FIS-202 (Física)',
+                edition: '9ª Edición',
+                buyPrice: 720,
+                rentPrice: 340,
+                condition: 'Como Nuevo',
+                notes: 'Pasta dura intacta, incluye guía de laboratorio.',
+                coverImage: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=600',
+                seller: { name: 'Elena Rostova', major: 'Física', phone: '+52 55 3344 5566' }
+            }
+        ];
+
+        let selectedBookForMeetup = null;
+        let selectedOptionType = 'rent';
+
+        function renderBooks(booksToDisplay) {
+            const grid = document.getElementById('books-grid');
+            const countEl = document.getElementById('books-count');
+
+            if (!grid) return;
+            grid.innerHTML = '';
+            countEl.textContent = booksToDisplay.length;
+
+            if (booksToDisplay.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full bg-slate-900 border border-slate-800 rounded-3xl p-10 text-center space-y-3">
+                        <i class="fa-solid fa-book-open-reader text-slate-600 text-3xl"></i>
+                        <p class="text-xs text-slate-400">No se encontraron libros que coincidan con los filtros seleccionados.</p>
+                        <button id="btn-empty-reset" class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded-xl font-bold text-xs">
+                            Limpiar Filtros
+                        </button>
+                    </div>
+                `;
+                document.getElementById('btn-empty-reset')?.addEventListener('click', resetFilters);
+                return;
+            }
+
+            booksToDisplay.forEach(book => {
+                const card = document.createElement('div');
+                card.className = 'book-card bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl overflow-hidden flex flex-col justify-between shadow-lg group';
+
+                card.innerHTML = `
+                    <div>
+                        <div class="relative h-48 bg-slate-950 overflow-hidden">
+                            <img src="${book.coverImage}" alt="${book.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <span class="absolute top-2 left-2 bg-slate-950/90 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-emerald-500/30 backdrop-blur-md">
+                                ${book.subject}
+                            </span>
+                            <span class="absolute bottom-2 right-2 bg-slate-950/90 text-slate-300 text-[10px] px-2 py-0.5 rounded border border-slate-800">
+                                ${book.condition}
+                            </span>
+                        </div>
+
+                        <div class="p-4 space-y-2">
+                            <span class="text-[11px] font-semibold text-emerald-400 block">${book.edition}</span>
+                            <h3 class="font-bold text-white text-base line-clamp-1 group-hover:text-emerald-300 transition">${book.title}</h3>
+                            <p class="text-xs text-slate-400 font-medium">${book.author}</p>
+
+                            <div class="flex items-center gap-2 pt-2 border-t border-slate-800/80 mt-2">
+                                <div class="w-6 h-6 rounded-full bg-slate-800 text-emerald-400 flex items-center justify-center font-bold text-[10px] border border-slate-700 shrink-0">
+                                    <i class="fa-solid fa-user-graduate"></i>
+                                </div>
+                                <div class="overflow-hidden">
+                                    <span class="text-[11px] font-bold text-slate-200 block truncate">${book.seller.name}</span>
+                                    <span class="text-[9px] text-slate-400 block truncate">${book.seller.major} • ${book.seller.phone}</span>
+                                </div>
+                            </div>
+
+                            <p class="text-[11px] text-slate-400 italic bg-slate-950 p-2.5 rounded-xl border border-slate-800/80 mt-2">
+                                "${book.notes}"
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 pt-0 space-y-3">
+                        <div class="grid grid-cols-2 gap-2 bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
+                            <div>
+                                <span class="text-[10px] text-slate-400 block">Comprar</span>
+                                <span class="text-xs font-bold text-white font-mono">$${book.buyPrice} MXN</span>
+                            </div>
+                            <div class="border-l border-slate-800">
+                                <span class="text-[10px] text-emerald-400 block">Alquilar / Sem.</span>
+                                <span class="text-xs font-bold text-emerald-400 font-mono">$${book.rentPrice} MXN</span>
+                            </div>
+                        </div>
+
+                        <button data-book-id="${book.id}" class="btn-open-meetup w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10">
+                            Acordar Cita / Comprar <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        </button>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+
+            document.querySelectorAll('.btn-open-meetup').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const bookId = e.currentTarget.getAttribute('data-book-id');
+                    openMeetupModal(bookId);
+                });
+            });
+        }
+
+        function applyFilters() {
+            const searchVal = (document.getElementById('search-input')?.value || '').toLowerCase().trim();
+            const subjectVal = document.getElementById('filter-subject')?.value || 'ALL';
+            const editionVal = document.getElementById('filter-edition')?.value || 'ALL';
+            const maxPriceVal = parseInt(document.getElementById('filter-price-range')?.value || '800', 10);
+
+            const filtered = BOOKS.filter(book => {
+                const matchSearch = searchVal === '' || 
+                    book.title.toLowerCase().includes(searchVal) || 
+                    book.author.toLowerCase().includes(searchVal);
+
+                const matchSubject = subjectVal === 'ALL' || book.subject === subjectVal;
+                const matchEdition = editionVal === 'ALL' || book.edition === editionVal;
+                const matchPrice = book.rentPrice <= maxPriceVal || book.buyPrice <= maxPriceVal;
+
+                return matchSearch && matchSubject && matchEdition && matchPrice;
+            });
+
+            renderBooks(filtered);
+        }
+
+        function updatePriceDisplayAndFilter() {
+            const val = document.getElementById('filter-price-range').value;
+            document.getElementById('price-display').textContent = `$${val} MXN`;
+            applyFilters();
+        }
+
+        function resetFilters() {
+            if (document.getElementById('search-input')) document.getElementById('search-input').value = '';
+            if (document.getElementById('filter-subject')) document.getElementById('filter-subject').value = 'ALL';
+            if (document.getElementById('filter-edition')) document.getElementById('filter-edition').value = 'ALL';
+            if (document.getElementById('filter-price-range')) {
+                document.getElementById('filter-price-range').value = 800;
+                document.getElementById('price-display').textContent = '$800 MXN';
+            }
+            applyFilters();
+            showToast('Filtros restablecidos');
+        }
+
+        function openMeetupModal(bookId) {
+            selectedBookForMeetup = BOOKS.find(b => b.id === bookId);
+            if (!selectedBookForMeetup) return;
+
+            document.getElementById('modal-book-title').textContent = selectedBookForMeetup.title;
+            document.getElementById('modal-book-seller').textContent = `Vendedor: ${selectedBookForMeetup.seller.name} (${selectedBookForMeetup.seller.major})`;
+            
+            selectOption('rent');
+            document.getElementById('meetup-modal').classList.remove('hidden');
+        }
+
+        function closeMeetupModal() {
+            document.getElementById('meetup-modal').classList.add('hidden');
+        }
+
+        function selectOption(type) {
+            selectedOptionType = type;
+            const btnRent = document.getElementById('btn-opt-rent');
+            const btnBuy = document.getElementById('btn-opt-buy');
+            const priceTag = document.getElementById('modal-price-tag');
+
+            if (type === 'rent') {
+                btnRent.className = 'p-2.5 rounded-xl border font-bold text-center transition bg-emerald-500/20 border-emerald-500 text-emerald-400';
+                btnBuy.className = 'p-2.5 rounded-xl border font-bold text-center transition bg-slate-950 border-slate-800 text-slate-400';
+                if (priceTag && selectedBookForMeetup) priceTag.textContent = `$${selectedBookForMeetup.rentPrice} MXN`;
+            } else {
+                btnBuy.className = 'p-2.5 rounded-xl border font-bold text-center transition bg-emerald-500/20 border-emerald-500 text-emerald-400';
+                btnRent.className = 'p-2.5 rounded-xl border font-bold text-center transition bg-slate-950 border-slate-800 text-slate-400';
+                if (priceTag && selectedBookForMeetup) priceTag.textContent = `$${selectedBookForMeetup.buyPrice} MXN`;
+            }
+        }
+
+        function confirmMeetup() {
+            const loc = document.getElementById('meetup-location').value;
+            const date = document.getElementById('meetup-date').value;
+            const time = document.getElementById('meetup-time').value;
+
+            closeMeetupModal();
+            showToast(`¡Cita agendada! Te verás con ${selectedBookForMeetup.seller.name} en: ${loc} el ${date} a las ${time} hs.`);
+        }
+
+        function updateNavUserUI() {
+            const navName = document.getElementById('nav-user-name');
+            const navMajor = document.getElementById('nav-user-major');
+            const navAvatar = document.getElementById('nav-user-avatar');
+
+            if (navName) navName.textContent = currentStudent.name;
+            if (navMajor) navMajor.textContent = currentStudent.major;
+            if (navAvatar && currentStudent.name) {
+                navAvatar.textContent = currentStudent.name.charAt(0).toUpperCase();
+            }
+        }
+
+        function saveStudentProfile(e) {
+            e.preventDefault();
+            currentStudent.name = document.getElementById('student-name').value;
+            currentStudent.major = document.getElementById('student-major').value;
+            currentStudent.phone = document.getElementById('student-phone').value;
+
+            updateNavUserUI();
+            document.getElementById('student-modal').classList.add('hidden');
+            showToast(`Perfil actualizado: ${currentStudent.name}`);
+        }
+
+        function handlePublishBook(e) {
+            e.preventDefault();
+            const title = document.getElementById('pub-title').value;
+            const author = document.getElementById('pub-author').value;
+            const subject = document.getElementById('pub-subject').value;
+            const edition = document.getElementById('pub-edition').value;
+            const buyPrice = parseInt(document.getElementById('pub-buy-price').value, 10);
+            const rentPrice = parseInt(document.getElementById('pub-rent-price').value, 10);
+            const notes = document.getElementById('pub-notes').value || 'Libro universitario en buen estado.';
+
+            const newBook = {
+                id: `b-${Date.now()}`,
+                title,
+                author,
+                subject,
+                edition,
+                buyPrice,
+                rentPrice,
+                condition: 'Excelente',
+                notes,
+                coverImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600',
+                seller: {
+                    name: currentStudent.name,
+                    major: currentStudent.major,
+                    phone: currentStudent.phone
+                }
+            };
+
+            BOOKS.unshift(newBook);
+            document.getElementById('publish-modal').classList.add('hidden');
+            applyFilters();
+            showToast(`¡Libro publicado por ${currentStudent.name}!`);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            if (toast && toastMsg) {
+                toastMsg.textContent = msg;
+                toast.classList.remove('translate-x-96', 'opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('translate-x-96', 'opacity-0');
+                }, 3500);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateNavUserUI();
+            renderBooks(BOOKS);
+
+            document.getElementById('search-input')?.addEventListener('input', applyFilters);
+            document.getElementById('filter-subject')?.addEventListener('change', applyFilters);
+            document.getElementById('filter-edition')?.addEventListener('change', applyFilters);
+            document.getElementById('filter-price-range')?.addEventListener('input', updatePriceDisplayAndFilter);
+            document.getElementById('btn-reset-filters')?.addEventListener('click', resetFilters);
+
+            document.getElementById('btn-open-student-modal')?.addEventListener('click', () => {
+                document.getElementById('student-name').value = currentStudent.name;
+                document.getElementById('student-major').value = currentStudent.major;
+                document.getElementById('student-phone').value = currentStudent.phone;
+                document.getElementById('student-modal').classList.remove('hidden');
+            });
+            document.getElementById('btn-close-student-modal')?.addEventListener('click', () => {
+                document.getElementById('student-modal').classList.add('hidden');
+            });
+
+            document.getElementById('btn-open-publish-modal')?.addEventListener('click', () => {
+                document.getElementById('publish-modal').classList.remove('hidden');
+            });
+            document.getElementById('btn-close-publish-modal')?.addEventListener('click', () => {
+                document.getElementById('publish-modal').classList.add('hidden');
+            });
+
+            document.getElementById('btn-close-meetup-modal')?.addEventListener('click', closeMeetupModal);
+            document.getElementById('btn-opt-rent')?.addEventListener('click', () => selectOption('rent'));
+            document.getElementById('btn-opt-buy')?.addEventListener('click', () => selectOption('buy'));
+            document.getElementById('btn-confirm-meetup')?.addEventListener('click', confirmMeetup);
+
+            document.getElementById('student-form')?.addEventListener('submit', saveStudentProfile);
+            document.getElementById('publish-form')?.addEventListener('submit', handlePublishBook);
+        });
+    </script>
+</body>
+</html>
