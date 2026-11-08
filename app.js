@@ -1,376 +1,377 @@
-tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        emerald: {
-                            400: '#34d399',
-                            500: '#10b981',
-                            600: '#059669',
-                        }
-                    }
-                }
-            }
-        }
+/**
+ * CampusBookX - Lógica de Interacción del Catálogo Universitario
+ * Enfoque de Accesibilidad y Usabilidad (HCI)
+ */
 
-let currentStudent = {
-            name: 'Carlos Mendoza',
-            major: 'Medicina (4° Semestre)',
-            phone: '+52 55 9876 5432'
+// 1. Estado inicial de la aplicación
+let currentUser = {
+    name: "Carlos Mendoza",
+    major: "Medicina (4° Semestre)",
+    phone: "+52 312 123 4567"
+};
+
+let booksData = [
+    {
+        id: 1,
+        title: "Anatomía con Orientación Clínica",
+        author: "Keith L. Moore, Arthur F. Dalley",
+        subject: "ANAT-101 (Anatomía Humana)",
+        edition: "8ª Edición",
+        buyPrice: 780,
+        rentPrice: 380,
+        seller: "Sofía Ruiz",
+        sellerMajor: "Medicina (6° Sem)",
+        sellerPhone: "+52 312 987 6543",
+        notes: "Excelente estado, sin tachones, incluye tablas de músculos intactas.",
+        tag: "Más Buscado"
+    },
+    {
+        id: 2,
+        title: "Cálculo: Trascendentes Tempranas",
+        author: "James Stewart",
+        subject: "MAT-101 (Cálculo)",
+        edition: "8ª Edición",
+        buyPrice: 650,
+        rentPrice: 280,
+        seller: "Alejandro Pérez",
+        sellerMajor: "Ing. en Software",
+        sellerPhone: "+52 312 555 1212",
+        notes: "Algunos ejercicios marcados a lápiz suave en capítulos 3 y 4.",
+        tag: "Recomendado"
+    },
+    {
+        id: 3,
+        title: "Fisiología Médica",
+        author: "Guyton y Hall",
+        subject: "FISIO-201 (Fisiología)",
+        edition: "9ª Edición",
+        buyPrice: 800,
+        rentPrice: 420,
+        seller: "Mariana Torres",
+        sellerMajor: "Medicina (5° Sem)",
+        sellerPhone: "+52 312 444 3322",
+        notes: "Encuadernación pasta dura, perfecto estado estético.",
+        tag: "Imprescindible"
+    },
+    {
+        id: 4,
+        title: "Estructuras de Datos y Algoritmos",
+        author: "Mark Allen Weiss",
+        subject: "CS-101 (Programación)",
+        edition: "4ª Edición",
+        buyPrice: 490,
+        rentPrice: 220,
+        seller: "Carlos Mendoza",
+        sellerMajor: "Ing. en Software",
+        sellerPhone: "+52 312 123 4567",
+        notes: "Edición con ejemplos prácticos en C++ y Java.",
+        tag: "Última Copia"
+    },
+    {
+        id: 5,
+        title: "Las Bases Farmacológicas de la Terapéutica",
+        author: "Goodman & Gilman",
+        subject: "FARMA-301 (Farmacología)",
+        edition: "9ª Edición",
+        buyPrice: 750,
+        rentPrice: 350,
+        seller: "Lucía Morales",
+        sellerMajor: "Medicina (7° Sem)",
+        sellerPhone: "+52 312 777 8899",
+        notes: "Forrado con plástico protector transparente desde nuevo.",
+        tag: "Clásico"
+    },
+    {
+        id: 6,
+        title: "Física Universitaria con Física Moderna Vol. 1",
+        author: "Sears y Zemansky",
+        subject: "FIS-202 (Física)",
+        edition: "7ª Edición",
+        buyPrice: 520,
+        rentPrice: 240,
+        seller: "Héctor Gómez",
+        sellerMajor: "Ing. Mecatrónica",
+        sellerPhone: "+52 312 888 9900",
+        notes: "Hojas limpias, sin apuntes de marcador.",
+        tag: "Oportunidad"
+    }
+];
+
+let selectedBookForMeetup = null;
+let currentMeetupMode = 'rent'; // 'rent' o 'buy'
+
+// 2. Elementos del DOM
+const booksGrid = document.getElementById('books-grid');
+const booksCount = document.getElementById('books-count');
+const searchInput = document.getElementById('search-input');
+const filterSubject = document.getElementById('filter-subject');
+const filterEdition = document.getElementById('filter-edition');
+const filterPriceRange = document.getElementById('filter-price-range');
+const priceDisplay = document.getElementById('price-display');
+const btnResetFilters = document.getElementById('btn-reset-filters');
+
+const studentModal = document.getElementById('student-modal');
+const btnOpenStudentModal = document.getElementById('btn-open-student-modal');
+const btnCloseStudentModal = document.getElementById('btn-close-student-modal');
+const studentForm = document.getElementById('student-form');
+const navUserName = document.getElementById('nav-user-name');
+const navUserMajor = document.getElementById('nav-user-major');
+const navUserAvatar = document.getElementById('nav-user-avatar');
+
+const publishModal = document.getElementById('publish-modal');
+const btnOpenPublishModal = document.getElementById('btn-open-publish-modal');
+const btnClosePublishModal = document.getElementById('btn-close-publish-modal');
+const publishForm = document.getElementById('publish-form');
+
+const meetupModal = document.getElementById('meetup-modal');
+const btnCloseMeetupModal = document.getElementById('btn-close-meetup-modal');
+const modalBookTitle = document.getElementById('modal-book-title');
+const modalBookSeller = document.getElementById('modal-book-seller');
+const modalPriceTag = document.getElementById('modal-price-tag');
+const btnOptRent = document.getElementById('btn-opt-rent');
+const btnOptBuy = document.getElementById('btn-opt-buy');
+const btnConfirmMeetup = document.getElementById('btn-confirm-meetup');
+
+const toast = document.getElementById('toast');
+const toastMessage = document.getElementById('toast-message');
+
+// 3. Sistema de Notificaciones Accesible (Toast)
+function showToast(msg) {
+    if (!toast || !toastMessage) return;
+    toastMessage.textContent = msg;
+    toast.classList.remove('translate-x-96', 'opacity-0');
+    toast.classList.add('translate-x-0', 'opacity-100');
+    
+    setTimeout(() => {
+        toast.classList.remove('translate-x-0', 'opacity-100');
+        toast.classList.add('translate-x-96', 'opacity-0');
+    }, 3800);
+}
+
+// 4. Renderizado del Catálogo de Libros
+function renderBooks() {
+    const query = searchInput.value.toLowerCase().trim();
+    const subject = filterSubject.value;
+    const edition = filterEdition.value;
+    const maxPrice = parseInt(filterPriceRange.value, 10);
+
+    const filtered = booksData.filter(book => {
+        const matchesQuery = book.title.toLowerCase().includes(query) || 
+                             book.author.toLowerCase().includes(query) ||
+                             book.subject.toLowerCase().includes(query);
+        const matchesSubject = (subject === 'ALL' || book.subject === subject);
+        const matchesEdition = (edition === 'ALL' || book.edition === edition);
+        const matchesPrice = (book.rentPrice <= maxPrice || book.buyPrice <= maxPrice);
+
+        return matchesQuery && matchesSubject && matchesEdition && matchesPrice;
+    });
+
+    booksCount.textContent = filtered.length;
+    booksGrid.innerHTML = '';
+
+    if (filtered.length === 0) {
+        booksGrid.innerHTML = `
+            <div class="col-span-full py-12 text-center bg-white border border-slate-200 rounded-3xl p-8 space-y-3 shadow-sm">
+                <i class="fa-solid fa-book-bookmark text-4xl text-slate-400" aria-hidden="true"></i>
+                <h3 class="text-base font-bold text-slate-800">No encontramos libros con esos criterios</h3>
+                <p class="text-xs text-slate-600 max-w-sm mx-auto">Prueba ajustando el precio máximo o restableciendo los filtros de materia y edición.</p>
+                <button onclick="resetAllFilters()" class="bg-blue-50 text-blue-800 font-bold px-4 py-2 rounded-xl text-xs hover:bg-blue-100 transition border border-blue-200">
+                    Restablecer búsqueda
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    filtered.forEach(book => {
+        const card = document.createElement('article');
+        card.className = "book-card bg-white border border-slate-200 hover:border-blue-400 rounded-2xl p-5 flex flex-col justify-between shadow-sm relative";
+        
+        card.innerHTML = `
+            <div class="space-y-3">
+                <div class="flex items-start justify-between gap-2">
+                    <span class="inline-block bg-blue-50 text-blue-800 text-[11px] font-bold px-2.5 py-1 rounded-md border border-blue-200">
+                        ${book.subject}
+                    </span>
+                    <span class="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                        ${book.edition}
+                    </span>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-slate-900 text-base leading-snug line-clamp-2">${book.title}</h3>
+                    <p class="text-xs text-slate-600 mt-1"><i class="fa-solid fa-user-pen mr-1 text-slate-400" aria-hidden="true"></i> ${book.author}</p>
+                </div>
+
+                <p class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200 italic">
+                    "${book.notes}"
+                </p>
+            </div>
+
+            <div class="pt-4 border-t border-slate-200 mt-4 space-y-3">
+                <div class="grid grid-cols-2 gap-2 text-left bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-slate-500 block">Renta Semestre</span>
+                        <span class="text-sm font-black text-blue-700 font-mono">$${book.rentPrice} MXN</span>
+                    </div>
+                    <div class="border-l border-slate-200 pl-2">
+                        <span class="text-[10px] uppercase font-bold text-slate-500 block">Compra Directa</span>
+                        <span class="text-sm font-black text-slate-900 font-mono">$${book.buyPrice} MXN</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-[11px] text-slate-600">
+                    <span><i class="fa-solid fa-circle-user text-blue-700 mr-1" aria-hidden="true"></i> ${book.seller}</span>
+                    <span class="text-slate-500">${book.sellerMajor}</span>
+                </div>
+
+                <button onclick="openMeetupModal(${book.id})" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-handshake" aria-hidden="true"></i> Acordar Cita en Campus
+                </button>
+            </div>
+        `;
+
+        booksGrid.appendChild(card);
+    });
+}
+
+// 5. Restablecer Filtros
+function resetAllFilters() {
+    searchInput.value = '';
+    filterSubject.value = 'ALL';
+    filterEdition.value = 'ALL';
+    filterPriceRange.value = 800;
+    priceDisplay.textContent = '$800 MXN';
+    renderBooks();
+    showToast('Filtros restablecidos');
+}
+
+// 6. Modal de Cita y Reserva
+window.openMeetupModal = function(id) {
+    const book = booksData.find(b => b.id === id);
+    if (!book) return;
+
+    selectedBookForMeetup = book;
+    currentMeetupMode = 'rent';
+
+    modalBookTitle.textContent = book.title;
+    modalBookSeller.textContent = `Ofrecido por: ${book.seller} (${book.sellerMajor})`;
+
+    updateMeetupModalPrices();
+    meetupModal.classList.remove('hidden');
+};
+
+function updateMeetupModalPrices() {
+    if (!selectedBookForMeetup) return;
+
+    if (currentMeetupMode === 'rent') {
+        modalPriceTag.textContent = `$${selectedBookForMeetup.rentPrice} MXN (Renta semestral)`;
+        btnOptRent.className = "p-2.5 rounded-xl border font-bold text-center transition bg-blue-50 border-blue-600 text-blue-900";
+        btnOptBuy.className = "p-2.5 rounded-xl border font-bold text-center transition bg-white border-slate-300 text-slate-700 hover:bg-slate-50";
+    } else {
+        modalPriceTag.textContent = `$${selectedBookForMeetup.buyPrice} MXN (Compra definitiva)`;
+        btnOptBuy.className = "p-2.5 rounded-xl border font-bold text-center transition bg-blue-50 border-blue-600 text-blue-900";
+        btnOptRent.className = "p-2.5 rounded-xl border font-bold text-center transition bg-white border-slate-300 text-slate-700 hover:bg-slate-50";
+    }
+}
+
+// 7. Eventos de la Interfaz
+document.addEventListener('DOMContentLoaded', () => {
+    renderBooks();
+
+    // Filtros dinámicos
+    searchInput.addEventListener('input', renderBooks);
+    filterSubject.addEventListener('change', renderBooks);
+    filterEdition.addEventListener('change', renderBooks);
+    
+    filterPriceRange.addEventListener('input', (e) => {
+        priceDisplay.textContent = `$${e.target.value} MXN`;
+        renderBooks();
+    });
+
+    btnResetFilters.addEventListener('click', resetAllFilters);
+
+    // Modal de Cita
+    btnOptRent.addEventListener('click', () => {
+        currentMeetupMode = 'rent';
+        updateMeetupModalPrices();
+    });
+
+    btnOptBuy.addEventListener('click', () => {
+        currentMeetupMode = 'buy';
+        updateMeetupModalPrices();
+    });
+
+    btnCloseMeetupModal.addEventListener('click', () => {
+        meetupModal.classList.add('hidden');
+    });
+
+    btnConfirmMeetup.addEventListener('click', () => {
+        const place = document.getElementById('meetup-location').value;
+        const date = document.getElementById('meetup-date').value;
+        const time = document.getElementById('meetup-time').value;
+
+        meetupModal.classList.add('hidden');
+        showToast(`¡Cita confirmada! Lugar: ${place} (${date} a las ${time})`);
+    });
+
+    // Modal de Perfil
+    btnOpenStudentModal.addEventListener('click', () => {
+        document.getElementById('student-name').value = currentUser.name;
+        document.getElementById('student-major').value = currentUser.major;
+        document.getElementById('student-phone').value = currentUser.phone;
+        studentModal.classList.remove('hidden');
+    });
+
+    btnCloseStudentModal.addEventListener('click', () => {
+        studentModal.classList.add('hidden');
+    });
+
+    studentForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        currentUser.name = document.getElementById('student-name').value;
+        currentUser.major = document.getElementById('student-major').value;
+        currentUser.phone = document.getElementById('student-phone').value;
+
+        navUserName.textContent = currentUser.name;
+        navUserMajor.textContent = currentUser.major;
+        navUserAvatar.textContent = currentUser.name.charAt(0).toUpperCase();
+
+        studentModal.classList.add('hidden');
+        showToast('Perfil actualizado correctamente');
+    });
+
+    // Modal de Publicar Libro
+    btnOpenPublishModal.addEventListener('click', () => {
+        publishModal.classList.remove('hidden');
+    });
+
+    btnClosePublishModal.addEventListener('click', () => {
+        publishModal.classList.add('hidden');
+    });
+
+    publishForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const newBook = {
+            id: Date.now(),
+            title: document.getElementById('pub-title').value,
+            author: document.getElementById('pub-author').value,
+            subject: document.getElementById('pub-subject').value,
+            edition: document.getElementById('pub-edition').value,
+            buyPrice: parseInt(document.getElementById('pub-buy-price').value, 10),
+            rentPrice: parseInt(document.getElementById('pub-rent-price').value, 10),
+            seller: currentUser.name,
+            sellerMajor: currentUser.major,
+            sellerPhone: currentUser.phone,
+            notes: document.getElementById('pub-notes').value || "En buen estado.",
+            tag: "Nuevo"
         };
 
-        let BOOKS = [
-            {
-                id: 'b-1',
-                title: 'Anatomía con Orientación Clínica',
-                author: 'Keith L. Moore',
-                subject: 'ANAT-101 (Anatomía Humana)',
-                edition: '8ª Edición',
-                buyPrice: 780,
-                rentPrice: 380,
-                condition: 'Excelente',
-                notes: 'Libro de lab de anatomía. Esquemas limpios sin rayaduras.',
-                coverImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600',
-                seller: { name: 'Dra. Andrea Ruiz', major: 'Medicina (Internado)', phone: '+52 55 1122 3344' }
-            },
-            {
-                id: 'b-2',
-                title: 'Tratado de Fisiología Médica',
-                author: 'Guyton y Hall',
-                subject: 'FISIO-201 (Fisiología)',
-                edition: '9ª Edición',
-                buyPrice: 750,
-                rentPrice: 360,
-                condition: 'Como Nuevo',
-                notes: 'Empastado en perfecto estado. Sin marca-textos.',
-                coverImage: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&q=80&w=600',
-                seller: { name: 'Mateo Morales', major: 'Medicina (6° Semestre)', phone: '+52 55 9988 7766' }
-            },
-            {
-                id: 'b-3',
-                title: 'Farmacología Ilustrada',
-                author: 'Karen Whalen (Lippincott)',
-                subject: 'FARMA-301 (Farmacología)',
-                edition: '7ª Edición',
-                buyPrice: 580,
-                rentPrice: 270,
-                condition: 'Bueno',
-                notes: 'Diagramas de mecanismos de acción con notas a lápiz.',
-                coverImage: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=600',
-                seller: { name: 'Valeria Gómez', major: 'QFB (5° Semestre)', phone: '+52 55 4455 6677' }
-            },
-            {
-                id: 'b-4',
-                title: 'Cálculo de Una Variable',
-                author: 'James Stewart',
-                subject: 'MAT-101 (Cálculo)',
-                edition: '8ª Edición',
-                buyPrice: 450,
-                rentPrice: 220,
-                condition: 'Excelente',
-                notes: 'Usado en primer semestre. Ejercicios resueltos anexados.',
-                coverImage: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&q=80&w=600',
-                seller: { name: 'Sofía Martínez', major: 'Ingeniería Civil', phone: '+52 55 1234 5678' }
-            },
-            {
-                id: 'b-5',
-                title: 'Fundamentos de Programación en Java',
-                author: 'Robert Lafore',
-                subject: 'CS-101 (Programación)',
-                edition: '5ª Edición',
-                buyPrice: 380,
-                rentPrice: 190,
-                condition: 'Bueno',
-                notes: 'Ideal para programación orientada a objetos.',
-                coverImage: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&q=80&w=600',
-                seller: { name: 'Carlos Mendoza', major: 'Computación', phone: '+52 55 9876 5432' }
-            },
-            {
-                id: 'b-6',
-                title: 'Física Universitaria Vol 1',
-                author: 'Sears y Zemansky',
-                subject: 'FIS-202 (Física)',
-                edition: '9ª Edición',
-                buyPrice: 720,
-                rentPrice: 340,
-                condition: 'Como Nuevo',
-                notes: 'Pasta dura intacta, incluye guía de laboratorio.',
-                coverImage: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=600',
-                seller: { name: 'Elena Rostova', major: 'Física', phone: '+52 55 3344 5566' }
-            }
-        ];
-
-        let selectedBookForMeetup = null;
-        let selectedOptionType = 'rent';
-
-        function renderBooks(booksToDisplay) {
-            const grid = document.getElementById('books-grid');
-            const countEl = document.getElementById('books-count');
-
-            if (!grid) return;
-            grid.innerHTML = '';
-            countEl.textContent = booksToDisplay.length;
-
-            if (booksToDisplay.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full bg-slate-900 border border-slate-800 rounded-3xl p-10 text-center space-y-3">
-                        <i class="fa-solid fa-book-open-reader text-slate-600 text-3xl"></i>
-                        <p class="text-xs text-slate-400">No se encontraron libros que coincidan con los filtros seleccionados.</p>
-                        <button id="btn-empty-reset" class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded-xl font-bold text-xs">
-                            Limpiar Filtros
-                        </button>
-                    </div>
-                `;
-                document.getElementById('btn-empty-reset')?.addEventListener('click', resetFilters);
-                return;
-            }
-
-            booksToDisplay.forEach(book => {
-                const card = document.createElement('div');
-                card.className = 'book-card bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl overflow-hidden flex flex-col justify-between shadow-lg group';
-
-                card.innerHTML = `
-                    <div>
-                        <div class="relative h-48 bg-slate-950 overflow-hidden">
-                            <img src="${book.coverImage}" alt="${book.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            <span class="absolute top-2 left-2 bg-slate-950/90 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-emerald-500/30 backdrop-blur-md">
-                                ${book.subject}
-                            </span>
-                            <span class="absolute bottom-2 right-2 bg-slate-950/90 text-slate-300 text-[10px] px-2 py-0.5 rounded border border-slate-800">
-                                ${book.condition}
-                            </span>
-                        </div>
-
-                        <div class="p-4 space-y-2">
-                            <span class="text-[11px] font-semibold text-emerald-400 block">${book.edition}</span>
-                            <h3 class="font-bold text-white text-base line-clamp-1 group-hover:text-emerald-300 transition">${book.title}</h3>
-                            <p class="text-xs text-slate-400 font-medium">${book.author}</p>
-
-                            <div class="flex items-center gap-2 pt-2 border-t border-slate-800/80 mt-2">
-                                <div class="w-6 h-6 rounded-full bg-slate-800 text-emerald-400 flex items-center justify-center font-bold text-[10px] border border-slate-700 shrink-0">
-                                    <i class="fa-solid fa-user-graduate"></i>
-                                </div>
-                                <div class="overflow-hidden">
-                                    <span class="text-[11px] font-bold text-slate-200 block truncate">${book.seller.name}</span>
-                                    <span class="text-[9px] text-slate-400 block truncate">${book.seller.major} • ${book.seller.phone}</span>
-                                </div>
-                            </div>
-
-                            <p class="text-[11px] text-slate-400 italic bg-slate-950 p-2.5 rounded-xl border border-slate-800/80 mt-2">
-                                "${book.notes}"
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="p-4 pt-0 space-y-3">
-                        <div class="grid grid-cols-2 gap-2 bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
-                            <div>
-                                <span class="text-[10px] text-slate-400 block">Comprar</span>
-                                <span class="text-xs font-bold text-white font-mono">$${book.buyPrice} MXN</span>
-                            </div>
-                            <div class="border-l border-slate-800">
-                                <span class="text-[10px] text-emerald-400 block">Alquilar / Sem.</span>
-                                <span class="text-xs font-bold text-emerald-400 font-mono">$${book.rentPrice} MXN</span>
-                            </div>
-                        </div>
-
-                        <button data-book-id="${book.id}" class="btn-open-meetup w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10">
-                            Acordar Cita / Comprar <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                        </button>
-                    </div>
-                `;
-
-                grid.appendChild(card);
-            });
-
-            document.querySelectorAll('.btn-open-meetup').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const bookId = e.currentTarget.getAttribute('data-book-id');
-                    openMeetupModal(bookId);
-                });
-            });
-        }
-
-        function applyFilters() {
-            const searchVal = (document.getElementById('search-input')?.value || '').toLowerCase().trim();
-            const subjectVal = document.getElementById('filter-subject')?.value || 'ALL';
-            const editionVal = document.getElementById('filter-edition')?.value || 'ALL';
-            const maxPriceVal = parseInt(document.getElementById('filter-price-range')?.value || '800', 10);
-
-            const filtered = BOOKS.filter(book => {
-                const matchSearch = searchVal === '' ||
-                    book.title.toLowerCase().includes(searchVal) ||
-                    book.author.toLowerCase().includes(searchVal);
-
-                const matchSubject = subjectVal === 'ALL' || book.subject === subjectVal;
-                const matchEdition = editionVal === 'ALL' || book.edition === editionVal;
-                const matchPrice = book.rentPrice <= maxPriceVal || book.buyPrice <= maxPriceVal;
-
-                return matchSearch && matchSubject && matchEdition && matchPrice;
-            });
-
-            renderBooks(filtered);
-        }
-
-        function updatePriceDisplayAndFilter() {
-            const val = document.getElementById('filter-price-range').value;
-            document.getElementById('price-display').textContent = `$${val} MXN`;
-            applyFilters();
-        }
-
-        function resetFilters() {
-            if (document.getElementById('search-input')) document.getElementById('search-input').value = '';
-            if (document.getElementById('filter-subject')) document.getElementById('filter-subject').value = 'ALL';
-            if (document.getElementById('filter-edition')) document.getElementById('filter-edition').value = 'ALL';
-            if (document.getElementById('filter-price-range')) {
-                document.getElementById('filter-price-range').value = 800;
-                document.getElementById('price-display').textContent = '$800 MXN';
-            }
-            applyFilters();
-            showToast('Filtros restablecidos');
-        }
-
-        function openMeetupModal(bookId) {
-            selectedBookForMeetup = BOOKS.find(b => b.id === bookId);
-            if (!selectedBookForMeetup) return;
-
-            document.getElementById('modal-book-title').textContent = selectedBookForMeetup.title;
-            document.getElementById('modal-book-seller').textContent = `Vendedor: ${selectedBookForMeetup.seller.name} (${selectedBookForMeetup.seller.major})`;
-
-            selectOption('rent');
-            document.getElementById('meetup-modal').classList.remove('hidden');
-        }
-
-        function closeMeetupModal() {
-            document.getElementById('meetup-modal').classList.add('hidden');
-        }
-
-        function selectOption(type) {
-            selectedOptionType = type;
-            const btnRent = document.getElementById('btn-opt-rent');
-            const btnBuy = document.getElementById('btn-opt-buy');
-            const priceTag = document.getElementById('modal-price-tag');
-
-            if (type === 'rent') {
-                btnRent.className = 'p-2.5 rounded-xl border font-bold text-center transition bg-emerald-500/20 border-emerald-500 text-emerald-400';
-                btnBuy.className = 'p-2.5 rounded-xl border font-bold text-center transition bg-slate-950 border-slate-800 text-slate-400';
-                if (priceTag && selectedBookForMeetup) priceTag.textContent = `$${selectedBookForMeetup.rentPrice} MXN`;
-            } else {
-                btnBuy.className = 'p-2.5 rounded-xl border font-bold text-center transition bg-emerald-500/20 border-emerald-500 text-emerald-400';
-                btnRent.className = 'p-2.5 rounded-xl border font-bold text-center transition bg-slate-950 border-slate-800 text-slate-400';
-                if (priceTag && selectedBookForMeetup) priceTag.textContent = `$${selectedBookForMeetup.buyPrice} MXN`;
-            }
-        }
-
-        function confirmMeetup() {
-            const loc = document.getElementById('meetup-location').value;
-            const date = document.getElementById('meetup-date').value;
-            const time = document.getElementById('meetup-time').value;
-
-            closeMeetupModal();
-            showToast(`¡Cita agendada! Te verás con ${selectedBookForMeetup.seller.name} en: ${loc} el ${date} a las ${time} hs.`);
-        }
-
-        function updateNavUserUI() {
-            const navName = document.getElementById('nav-user-name');
-            const navMajor = document.getElementById('nav-user-major');
-            const navAvatar = document.getElementById('nav-user-avatar');
-
-            if (navName) navName.textContent = currentStudent.name;
-            if (navMajor) navMajor.textContent = currentStudent.major;
-            if (navAvatar && currentStudent.name) {
-                navAvatar.textContent = currentStudent.name.charAt(0).toUpperCase();
-            }
-        }
-
-        function saveStudentProfile(e) {
-            e.preventDefault();
-            currentStudent.name = document.getElementById('student-name').value;
-            currentStudent.major = document.getElementById('student-major').value;
-            currentStudent.phone = document.getElementById('student-phone').value;
-
-            updateNavUserUI();
-            document.getElementById('student-modal').classList.add('hidden');
-            showToast(`Perfil actualizado: ${currentStudent.name}`);
-        }
-
-        function handlePublishBook(e) {
-            e.preventDefault();
-            const title = document.getElementById('pub-title').value;
-            const author = document.getElementById('pub-author').value;
-            const subject = document.getElementById('pub-subject').value;
-            const edition = document.getElementById('pub-edition').value;
-            const buyPrice = parseInt(document.getElementById('pub-buy-price').value, 10);
-            const rentPrice = parseInt(document.getElementById('pub-rent-price').value, 10);
-            const notes = document.getElementById('pub-notes').value || 'Libro universitario en buen estado.';
-
-            const newBook = {
-                id: `b-${Date.now()}`,
-                title,
-                author,
-                subject,
-                edition,
-                buyPrice,
-                rentPrice,
-                condition: 'Excelente',
-                notes,
-                coverImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600',
-                seller: {
-                    name: currentStudent.name,
-                    major: currentStudent.major,
-                    phone: currentStudent.phone
-                }
-            };
-
-            BOOKS.unshift(newBook);
-            document.getElementById('publish-modal').classList.add('hidden');
-            applyFilters();
-            showToast(`¡Libro publicado por ${currentStudent.name}!`);
-        }
-
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toast-message');
-            if (toast && toastMsg) {
-                toastMsg.textContent = msg;
-                toast.classList.remove('translate-x-96', 'opacity-0');
-                setTimeout(() => {
-                    toast.classList.add('translate-x-96', 'opacity-0');
-                }, 3500);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            updateNavUserUI();
-            renderBooks(BOOKS);
-
-            document.getElementById('search-input')?.addEventListener('input', applyFilters);
-            document.getElementById('filter-subject')?.addEventListener('change', applyFilters);
-            document.getElementById('filter-edition')?.addEventListener('change', applyFilters);
-            document.getElementById('filter-price-range')?.addEventListener('input', updatePriceDisplayAndFilter);
-            document.getElementById('btn-reset-filters')?.addEventListener('click', resetFilters);
-
-            document.getElementById('btn-open-student-modal')?.addEventListener('click', () => {
-                document.getElementById('student-name').value = currentStudent.name;
-                document.getElementById('student-major').value = currentStudent.major;
-                document.getElementById('student-phone').value = currentStudent.phone;
-                document.getElementById('student-modal').classList.remove('hidden');
-            });
-            document.getElementById('btn-close-student-modal')?.addEventListener('click', () => {
-                document.getElementById('student-modal').classList.add('hidden');
-            });
-
-            document.getElementById('btn-open-publish-modal')?.addEventListener('click', () => {
-                document.getElementById('publish-modal').classList.remove('hidden');
-            });
-            document.getElementById('btn-close-publish-modal')?.addEventListener('click', () => {
-                document.getElementById('publish-modal').classList.add('hidden');
-            });
-
-            document.getElementById('btn-close-meetup-modal')?.addEventListener('click', closeMeetupModal);
-            document.getElementById('btn-opt-rent')?.addEventListener('click', () => selectOption('rent'));
-            document.getElementById('btn-opt-buy')?.addEventListener('click', () => selectOption('buy'));
-            document.getElementById('btn-confirm-meetup')?.addEventListener('click', confirmMeetup);
-
-            document.getElementById('student-form')?.addEventListener('submit', saveStudentProfile);
-            document.getElementById('publish-form')?.addEventListener('submit', handlePublishBook);
-        });
+        booksData.unshift(newBook);
+        publishForm.reset();
+        publishModal.classList.add('hidden');
+        renderBooks();
+        showToast('¡Libro publicado exitosamente en el catálogo!');
+    });
+});
